@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 from sqlite3 import *
 from sqlite3 import Error, Connection
@@ -231,7 +230,9 @@ class SQLHTable(object):
   def __null_row_add(self):
     for column_dict in self.columns:
       records = column_dict["records"]
-      records.append(("NULL" if self.row_id is not column_dict["column_object"] else self.get_records_count() + 1))
+      records_exec = self.database_object.execute_query(f"SELECT * FROM {self.name}")
+      print(records_exec)
+      records.append(("NULL" if self.row_id is not column_dict["column_object"] else len(records_exec) + 1))
 
   def add_record(self, records:list):
     primary_key_records = self.get_column_dict(self.primary_key)["records"] 
