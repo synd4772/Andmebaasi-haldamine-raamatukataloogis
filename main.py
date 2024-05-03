@@ -1,11 +1,11 @@
-from cgitb import reset, text
-from enum import auto
-from json.tool import main
-from sre_parse import expand_template
+
 from tkinter import *
 from sqlite_handler import *
 from random import *
 main_database = SQLHDatabase("data.db")
+
+main_frame = None
+buttons_frame = None
 
 autor_date_entry = None
 autor_nimi_entry = None
@@ -56,6 +56,7 @@ def render_menu_buttons(page_buttons):
         see_table_button = Button(frame, text=page_button[0], command=page_button[1], bg="#21063c", fg="#45456e", font=("Arial", 25))
         page_buttons_objects.append(see_table_button)
     for button in page_buttons_objects:
+        print(button)
         button.pack(expand=True, side=LEFT, pady=10)
     return frame
 
@@ -133,11 +134,15 @@ def confirm_book():
 
 def reset_window(buttons):
     global main_frame, buttons_frame
-    main_frame.destroy()
-    buttons_frame.destroy()
+    if main_frame is not None:
+        main_frame.destroy()
+    if buttons_frame is not None:
+     buttons_frame.destroy()
 
+    
     buttons_frame = render_menu_buttons(buttons)
     main_frame = render_main_frame()
+    
 
 def confirm_autor():
     global main_frame, buttons_frame
@@ -276,7 +281,5 @@ tables_page_buttons = [["Kodu menüü", home], ["Raamat", see_book_table], ["Aut
 page_buttons = [["Kõik raamatud", see_all_books], ["Redigeerimismenüü", changing_menu], ["Kõik tabelid", see_all_tables]]
 editing_page_buttons = [["Kodu menüü", home],["Lisa raamat", add_book], ["Lisa autor", add_autor], ["Lisa zanr", add_zanr]]
 page_buttons_objects = list()
-buttons_frame = render_menu_buttons(page_buttons)
-main_frame = render_main_frame()
 home()
 root.mainloop()
