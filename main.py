@@ -1,5 +1,6 @@
-from cgitb import text
+from cgitb import reset, text
 from enum import auto
+from json.tool import main
 from sre_parse import expand_template
 from tkinter import *
 from sqlite_handler import *
@@ -71,10 +72,11 @@ def table_template(root:Tk, table:SQLHTable, pack:bool = True):
 
 def changing_menu():
     global buttons_frame, main_frame
-    buttons_frame.pack_forget()
-    buttons_frame = render_menu_buttons(editing_page_buttons)
-    main_frame.pack_forget()
-    main_frame.pack(fill=X)
+    reset_window(editing_page_buttons)
+    label = Label(main_frame, text="Siin saab lisada tabelite kirjeid", font = ("Arial", 25), fg="White", bg=main_frame_bg_color)
+    label.pack(pady=200)
+    space = Label(main_frame, bg=main_frame_bg_color)
+    space.pack(pady=1800)
     pass
 
 def render_all_tables():
@@ -131,8 +133,8 @@ def confirm_book():
 
 def reset_window(buttons):
     global main_frame, buttons_frame
-    main_frame.pack_forget()
-    buttons_frame.pack_forget()
+    main_frame.destroy()
+    buttons_frame.destroy()
 
     buttons_frame = render_menu_buttons(buttons)
     main_frame = render_main_frame()
@@ -190,19 +192,91 @@ def add_zanr():
 def home():
     global buttons_frame, main_frame
     reset_window(page_buttons)
+    space = Label(main_frame, bg=main_frame_bg_color)
+    label = Label(main_frame, text="Peamenüü, vali, mida soovid ülevalt nuppudega teha", font = ("Arial", 25), fg = "White", bg = main_frame_bg_color)
+    label.pack(pady=200)
+
+    space.pack(pady=500)
 
 
+def see_all_tables():
+    reset_window(tables_page_buttons)
+    
+def tabel_info(tabel:SQLHTable):
+    name = tabel.name
+    columns = tabel.get_columns()
+    start_space = Label(main_frame, bg=main_frame_bg_color)
+    start_space.pack(pady=50)
 
+    # TABLE NAME START
 
+    table_name_label = Label(main_frame, bg = main_frame_bg_color, text = f"{name}", fg="White", font=("Arial", 20))
+    table_name_label.pack()
+
+    # END
+
+    # -----------------------------------------------------------------------------------------------------------------
+
+    # TABLE COLUMNS START
+
+    table_columns_label = Label(main_frame, bg = main_frame_bg_color, text = f"Tabeli veerud:", fg="White", font=("Arial", 20))
+    table_columns_label.pack()
+
+    columns_labels_list = list()
+    for column in columns:
+        column_label = Label(main_frame, text = column.name, bg="white", fg="black", width=10, height=1)
+        columns_labels_list.append(column_label)
+
+    for clmns in columns_labels_list:
+        clmns.pack(side = LEFT)
+
+    #trebuetsa dobavit kod dalshe!
+
+    # END
+
+    # ----------------------------------------------------------------------------------------------------------------- 
+
+    # TABLE RECORDS START
+
+    table_records_label = Label(main_frame, bg = main_frame_bg_color, text = f"Tabeli andmed:", fg="White", font=("Arial", 20))
+    table_records_label.pack()
+
+    #trebuetsa dobavit kod dalshe!
+
+    # END
+
+    # -----------------------------------------------------------------------------------------------------------------
+
+    end_space = Label(main_frame, bg=main_frame_bg_color)
+    end_space.pack(pady=1800)
+
+def see_book_table():
+
+    reset_window(tables_page_buttons)
+    tabel_info(book_table)
+    pass
+
+def see_autor_table():
+    reset_window(tables_page_buttons)
+    tabel_info(autors_table)
+    pass
+
+def see_zanr_table():
+    reset_window(tables_page_buttons)
+    tabel_info(zanrid_table)
+    pass
 
 root = Tk()
 root.title("Database Management")
 root.geometry("800x800")
 root.resizable(False, False)
 
-page_buttons = [["Kõik raamatud", see_all_books], ["Redigeerimismenüü", changing_menu]]
+
+tables_page_buttons = [["Kodu menüü", home], ["Raamat", see_book_table], ["Autor", see_autor_table], ["Zanr", see_zanr_table]]
+page_buttons = [["Kõik raamatud", see_all_books], ["Redigeerimismenüü", changing_menu], ["Kõik tabelid", see_all_tables]]
 editing_page_buttons = [["Kodu menüü", home],["Lisa raamat", add_book], ["Lisa autor", add_autor], ["Lisa zanr", add_zanr]]
 page_buttons_objects = list()
 buttons_frame = render_menu_buttons(page_buttons)
 main_frame = render_main_frame()
+home()
 root.mainloop()
