@@ -2,6 +2,9 @@
 from tkinter import *
 from sqlite_handler import *
 from random import *
+from time import *
+
+
 main_database = SQLHDatabase("data.db")
 
 main_frame = None
@@ -49,237 +52,320 @@ add_columns(book_table, book_table_columns)
 all_tables = [autors_table, zanrid_table, book_table]
 set_tables(main_database, all_tables)
 
-def render_menu_buttons(page_buttons):
-    frame = Frame(root, bg="#705c83")
-    frame.pack(fill=X)
+
+class DatabaseUI(object):
+  
+  def __init__(self, root):
+    self.root = root
+    self.root.title = "Database Management"
+    self.root.geometry("800x800")
+    self.root.resizable(False, False)
+
+    self.main_frame = None
+    self.buttons_frame = None
+
+    self.autor_date_entry = None
+    self.autor_nimi_entry = None
+    self.zanr_nimi_entry = None
+
+    self.pealkiri_entry = None
+    self.valjaandmise_kuupaev_entry = None
+    self.autor_id = None
+    self.zanr_id = None
+
+    self.main_frame_bg_color = "#30304d"
+
+    self.tables_page_buttons = [["Kodu menüü", self.home], ["Raamat", self.see_book_table], ["Autor", self.see_autor_table], ["Zanr", self.see_zanr_table]]
+    self.page_buttons = [["Kõik raamatud", self.see_all_books], ["Redigeerimismenüü", self.changing_menu], ["Kõik tabelid", self.see_all_tables]]
+    self.editing_page_buttons = [["Kodu menüü", self.home],["Lisa raamat", self.add_book], ["Lisa autor", self.add_autor], ["Lisa zanr", self.add_zanr]]
+
+    self.home()
+
+  def home_page():
+    pass
+
+  def render_menu_buttons(self, page_buttons):
+    if self.buttons_frame is None:
+        self.buttons_frame = Frame(root, bg="#705c83")
+        self.buttons_frame.pack(fill=X)
+    else:
+        self.clear_frame(self.buttons_frame)
+
     for page_button in page_buttons:
-        see_table_button = Button(frame, text=page_button[0], command=page_button[1], bg="#21063c", fg="#45456e", font=("Arial", 25))
-        page_buttons_objects.append(see_table_button)
-    for button in page_buttons_objects:
-        print(button)
+        button = Button(self.buttons_frame, text=page_button[0], command=page_button[1], bg="#21063c", fg="#45456e", font=("Arial", 25))
         button.pack(expand=True, side=LEFT, pady=10)
-    return frame
 
-def render_main_frame():
-    main_frame = Frame(root, bg="#30304d", height=800)
-    main_frame.pack(fill=BOTH)
+    return self.buttons_frame
 
-    return main_frame
+  def render_main_frame(self):
+      if self.main_frame is None:
+          self.main_frame = Frame(root, bg=main_frame_bg_color, height=800)
+          self.main_frame.pack(fill=BOTH)
+      return self.main_frame
 
-def table_template(root:Tk, table:SQLHTable, pack:bool = True):
 
+  def clear_frame(self, frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
+
+  def see_all_books(self):
     pass
 
+  def changing_menu(self):
+      self.reset_window(self.editing_page_buttons)
+      label = Label(self.main_frame, text="Siin saab lisada tabelite kirjeid", font = ("Arial", 25), fg="White", bg=self.main_frame_bg_color)
+      label.pack(pady=200)
+      space = Label(self.main_frame, bg=self.main_frame_bg_color)
+      space.pack(pady=1800)
+      pass
 
-def changing_menu():
-    global buttons_frame, main_frame
-    reset_window(editing_page_buttons)
-    label = Label(main_frame, text="Siin saab lisada tabelite kirjeid", font = ("Arial", 25), fg="White", bg=main_frame_bg_color)
-    label.pack(pady=200)
-    space = Label(main_frame, bg=main_frame_bg_color)
-    space.pack(pady=1800)
-    pass
+  def add_book(self):
+      # pealkiri_entry = None
+      # valjaandmise_kuupaev_entry = None
+      # autor_id = None
+      # zanr_id = None
+      self.reset_window(self.editing_page_buttons)
+      space = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space.pack(pady=40)
 
-def render_all_tables():
-    pass
+      book_nimi_label = Label(self.main_frame, text="Pealkiri", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      book_nimi_label.pack(pady=10)
+      self.pealkiri_entry = Entry(self.main_frame, font=("Arial", 15) )
+      self.pealkiri_entry.pack()
 
-def see_all_books():
-    print("hallo")
-    pass
+      book_date = Label(self.main_frame, text="Valjaandmise kuupaev", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      book_date.pack(pady=10)
+      self.valjaandmise_kuupaev_entry = Entry(self.main_frame, font = ("Arial", 15))
+      self.valjaandmise_kuupaev_entry.pack()
 
-def add_book():
-    # pealkiri_entry = None
-    # valjaandmise_kuupaev_entry = None
-    # autor_id = None
-    # zanr_id = None
-    global main_frame, pealkiri_entry, valjaandmise_kuupaev_entry, autor_id, zanr_id
-    reset_window(editing_page_buttons)
-    space = Label(main_frame, bg = main_frame_bg_color)
-    space.pack(pady=40)
+      book_autor_id = Label(self.main_frame, text="Autor id", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      book_autor_id.pack(pady=10)
+      self.autor_id = Entry(self.main_frame, font = ("Arial", 15))
+      self.autor_id.pack()
 
-    book_nimi_label = Label(main_frame, text="Pealkiri", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    book_nimi_label.pack(pady=10)
-    book_nimi_entry = Entry(main_frame, font=("Arial", 15) )
-    book_nimi_entry.pack()
+      book_zanr_id = Label(self.main_frame, text="Zanr id", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
+      book_zanr_id.pack(pady=10)
+      self.zanr_id = Entry(self.main_frame, font = ("Arial", 15))
+      self.zanr_id.pack()
 
-    book_date = Label(main_frame, text="Valjaandmise kuupaev", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    book_date.pack(pady=10)
-    book_date_entry = Entry(main_frame, font = ("Arial", 15))
-    book_date_entry.pack()
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_book)
+      confirm_button.pack(pady=80)
+      space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space2.pack(pady=100)
+      pass
 
-    book_autor_id = Label(main_frame, text="Autor id", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    book_autor_id.pack(pady=10)
-    autor_id = Entry(main_frame, font = ("Arial", 15))
-    autor_id.pack()
+  def confirm_book(self):
+      pealkiri = self.pealkiri_entry.get()
+      kuupaev = self.valjaandmise_kuupaev_entry.get()
+      autor = self.autor_id.get()
+      zanr = self.zanr_id.get()
 
-    book_zanr_id = Label(main_frame, text="Zanr id", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    book_zanr_id.pack(pady=10)
-    zanr_id = Entry(main_frame, font = ("Arial", 15))
-    zanr_id.pack()
+      book_table.add_record([pealkiri, kuupaev, autor, zanr])
+      self.reset_window(self.page_buttons)
+      self.tabel_info(book_table)
 
-    confirm_button = Button(main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=confirm_autor)
-    confirm_button.pack(pady=80)
-    space2 = Label(main_frame, bg = main_frame_bg_color)
-    space2.pack(pady=100)
-    pass
+  def reset_window(self, buttons):
+      if self.buttons_frame is not None:
+        self.clear_frame(self.buttons_frame)
+      self.buttons_frame = self.render_menu_buttons(buttons)
 
-def confirm_book():
-    pealkiri = pealkiri_entry.get()
-    kuupaev = valjaandmise_kuupaev_entry.get()
-    autor = autor_id.get()
-    zanr = zanr_id.get()
+      if self.main_frame is not None:
+        self.clear_frame(self.main_frame)
 
-    book_table.add_record([pealkiri, kuupaev, autor, zanr])
-    reset_window(page_buttons)
+      self.main_frame = self.render_main_frame()
+      
+      
+      
+      
 
-def reset_window(buttons):
-    global main_frame, buttons_frame
-    if main_frame is not None:
-        main_frame.destroy()
-    if buttons_frame is not None:
-     buttons_frame.destroy()
+  def confirm_autor(self):
+      name = self.autor_nimi_entry.get()
+      date = self.autor_date_entry.get()
+      autors_table.add_record([name, date])
 
-    
-    buttons_frame = render_menu_buttons(buttons)
-    main_frame = render_main_frame()
-    
+      self.reset_window(self.page_buttons)
 
-def confirm_autor():
-    global main_frame, buttons_frame
+  def confirm_zanr(self):
+      zanr = self.zanr_nimi_entry.get()
+      zanrid_table.add_record([zanr])
 
-    name = autor_nimi_entry.get()
-    date = autor_date_entry.get()
-    autors_table.add_record([name, date])
+      self.reset_window(self.page_buttons)
 
-    reset_window(page_buttons)
+  def add_autor(self):
+      self.reset_window(self.editing_page_buttons)
+      space = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space.pack(pady=60)
+      autor_nimi_label = Label(self.main_frame, text="Autor nimi", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      autor_nimi_label.pack(pady=10)
+      self.autor_nimi_entry = Entry(self.main_frame, font=("Arial", 15) )
+      self.autor_nimi_entry.pack()
+      autor_date = Label(self.main_frame, text="Autor sünnipaev", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      autor_date.pack(pady=10)
+      self.autor_date_entry = Entry(self.main_frame, font = ("Arial", 15))
+      self.autor_date_entry.pack()
 
-def confirm_zanr():
-    
-    zanr = zanr_nimi_entry.get()
-    zanrid_table.add_record([zanr])
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_autor)
+      confirm_button.pack(pady=80)
+      space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space2.pack(pady=100)
 
-    reset_window(page_buttons)
+  def add_zanr(self):
+      self.reset_window(self.editing_page_buttons)
+      space = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space.pack(pady=80)
+      autor_nimi_label = Label(self.main_frame, text="Zanr", fg="white", bg=self.main_frame_bg_color, font = ("Arial", 20))
+      autor_nimi_label.pack(pady=10)
+      self.zanr_nimi_entry = Entry(self.main_frame, font=("Arial", 15) )
+      self.zanr_nimi_entry.pack()
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_zanr)
+      confirm_button.pack(pady=40)
+      space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
+      space2.pack(pady=190)
 
-def add_autor():
-    global main_frame, autor_nimi_entry, autor_date_entry
-    reset_window(editing_page_buttons)
-    space = Label(main_frame, bg = main_frame_bg_color)
-    space.pack(pady=60)
-    autor_nimi_label = Label(main_frame, text="Autor nimi", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    autor_nimi_label.pack(pady=10)
-    autor_nimi_entry = Entry(main_frame, font=("Arial", 15) )
-    autor_nimi_entry.pack()
-    autor_date = Label(main_frame, text="Autor sünnipaev", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    autor_date.pack(pady=10)
-    autor_date_entry = Entry(main_frame, font = ("Arial", 15))
-    autor_date_entry.pack()
-
-    confirm_button = Button(main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=confirm_autor)
-    confirm_button.pack(pady=80)
-    space2 = Label(main_frame, bg = main_frame_bg_color)
-    space2.pack(pady=100)
-    pass
-
-def add_zanr():
-    global main_frame, zanr_nimi_entry
-    reset_window(editing_page_buttons)
-    space = Label(main_frame, bg = main_frame_bg_color)
-    space.pack(pady=80)
-    autor_nimi_label = Label(main_frame, text="Zanr", fg="white", bg=main_frame_bg_color, font = ("Arial", 20))
-    autor_nimi_label.pack(pady=10)
-    zanr_nimi_entry = Entry(main_frame, font=("Arial", 15) )
-    zanr_nimi_entry.pack()
-    confirm_button = Button(main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=confirm_zanr)
-    confirm_button.pack(pady=40)
-    space2 = Label(main_frame, bg = main_frame_bg_color)
-    space2.pack(pady=190)
-
-def home():
-    global buttons_frame, main_frame
-    reset_window(page_buttons)
-    space = Label(main_frame, bg=main_frame_bg_color)
-    label = Label(main_frame, text="Peamenüü, vali, mida soovid ülevalt nuppudega teha", font = ("Arial", 25), fg = "White", bg = main_frame_bg_color)
-    label.pack(pady=200)
-
-    space.pack(pady=500)
+  def home(self):
+      self.reset_window(self.page_buttons)
+      space = Label(self.main_frame, bg=self.main_frame_bg_color)
+      label = Label(self.main_frame, text="Peamenüü, vali, mida soovid ülevalt nuppudega teha", font = ("Arial", 25), fg = "White", bg = self.main_frame_bg_color)
+      label.pack(pady=200)
+      space.pack(pady=500)
 
 
-def see_all_tables():
-    reset_window(tables_page_buttons)
-    
-def tabel_info(tabel:SQLHTable):
-    name = tabel.name
-    columns = tabel.get_columns()
-    start_space = Label(main_frame, bg=main_frame_bg_color)
-    start_space.pack(pady=50)
+  def see_all_tables(self):
+      self.reset_window(self.tables_page_buttons)
+      
+  def tabel_info(self, tabel:SQLHTable):
+      name = tabel.name
+      columns = tabel.get_columns()
+      start_space = Label(self.main_frame, bg=self.main_frame_bg_color)
+      start_space.pack(pady=50)
 
-    # TABLE NAME START
+      # TABLE NAME START
 
-    table_name_label = Label(main_frame, bg = main_frame_bg_color, text = f"{name}", fg="White", font=("Arial", 20))
-    table_name_label.pack()
+      table_name_label = Label(self.main_frame, bg = self.main_frame_bg_color, text = f"{name}", fg="White", font=("Arial", 20))
+      table_name_label.pack()
 
-    # END
+      # END
 
-    # -----------------------------------------------------------------------------------------------------------------
+      # -----------------------------------------------------------------------------------------------------------------
 
-    # TABLE COLUMNS START
+      # TABLE COLUMNS START
 
-    table_columns_label = Label(main_frame, bg = main_frame_bg_color, text = f"Tabeli veerud:", fg="White", font=("Arial", 20))
-    table_columns_label.pack()
+      columns_labels_list = list()
+      columns_labels_frame = Frame(self.main_frame, bg = self.main_frame_bg_color)
+      columns_labels_frame.pack()
+      for column in columns:
+          column_label = Label(columns_labels_frame, text = column.name, bg="#181436", fg="white", width=19, height=1, font=("Arial",10), borderwidth=1, relief="solid")
+          columns_labels_list.append(column_label)
+          column_label.pack(side=LEFT)
+      else:
+          edit_button = Button(columns_labels_frame, bg='#181436', fg='white', width=6, height=1, borderwidth=1, relief="solid", font=("Arial",7))
+          edit_button.pack(side=LEFT)
+      #trebuetsa dobavit kod dalshe!
 
+      # END
+
+      # ----------------------------------------------------------------------------------------------------------------- 
+
+      # TABLE RECORDS START
+
+      records = tabel.get_records(rows = True)
+      print(records)
+      record_labels_list = list()
+      count = 0
+      for column_index, row in enumerate(records):
+        temp_frame = Frame(self.main_frame, bg = self.main_frame_bg_color)
+        temp_frame.pack()
+        row_id = row[0]
+        print(records, 'LETSGOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
+        for record in row:
+          record_label = Label(temp_frame, text = record, bg='#181436', fg='white', width=19, height=1, font=("Arial",10), borderwidth=1, relief="solid")
+          record_labels_list.append(record_label)
+          record_label.pack(side=LEFT)
+        Button(temp_frame, text = "edit", bg='#181436', fg='white', width=6, height=1, font=("Arial",7), borderwidth=1, relief="solid", command=lambda record_id = row_id: self.edit_record(table = tabel, record = record_id)).pack(side=RIGHT, expand=True)
+      
+      #trebuetsa dobavit kod dalshe!
+
+      # END
+
+      # -----------------------------------------------------------------------------------------------------------------
+
+      end_space = Label(self.main_frame, bg=self.main_frame_bg_color)
+      end_space.pack(pady=1800)
+
+  def edit_record(self, table, record):
+    row = table.get_row_by_id(record)
+    self.reset_window(self.tables_page_buttons)
+    start_space = Label(self.main_frame, bg=self.main_frame_bg_color)
+    start_space.pack(pady=120)
+    columns = table.get_columns()
     columns_labels_list = list()
+    columns_labels_frame = Frame(self.main_frame, bg = self.main_frame_bg_color)
+    columns_labels_frame.pack()
     for column in columns:
-        column_label = Label(main_frame, text = column.name, bg="white", fg="black", width=10, height=1)
+        column_label = Label(columns_labels_frame, text = column.name, bg="#181436", fg="white", width=19, height=1, font=("Arial",10), borderwidth=1, relief="solid")
         columns_labels_list.append(column_label)
+        column_label.pack(side=LEFT)
 
-    for clmns in columns_labels_list:
-        clmns.pack(side = LEFT)
+    temp_frame = Frame(self.main_frame, bg = self.main_frame_bg_color)
+    temp_frame.pack()
+    entrys_list = list()
+    for index, t_record in enumerate(row):
+      if index != 0:
+        record_label = Entry(temp_frame, bg='#181436', fg='white', width=22, font=("Arial",10), borderwidth=1, relief="solid")
+        record_label.insert(0, t_record)
+        record_label.pack(side=LEFT)
+        entrys_list.append({columns[index]:record_label})
+      else:
+        record_label = Label(temp_frame, text = t_record, bg='#181436', fg='white', width=19, font=("Arial",10), borderwidth=1, relief="solid")
+        record_label.pack(side=LEFT)
 
-    #trebuetsa dobavit kod dalshe!
+    second_space = Label(self.main_frame, bg=self.main_frame_bg_color)
+    second_space.pack(pady=10)
 
-    # END
+    cd_frame = Frame(self.main_frame, bg='#181436')
+    cd_frame.pack()
+    confirm_button = Button(cd_frame, font=("Arial",10), text="Confirm", command=lambda entrys = entrys_list: self.confirm_change(table=table, id=record, entrys=entrys))
+    confirm_button.pack(side=LEFT)
+    delete_button = Button(cd_frame, font=("Arial",10), text="Delete", command=lambda cmd_id = record: self.delete_record(table, cmd_id))
+    delete_button.pack(side=LEFT)
 
-    # ----------------------------------------------------------------------------------------------------------------- 
-
-    # TABLE RECORDS START
-
-    table_records_label = Label(main_frame, bg = main_frame_bg_color, text = f"Tabeli andmed:", fg="White", font=("Arial", 20))
-    table_records_label.pack()
-
-    #trebuetsa dobavit kod dalshe!
-
-    # END
-
-    # -----------------------------------------------------------------------------------------------------------------
-
-    end_space = Label(main_frame, bg=main_frame_bg_color)
+    end_space = Label(self.main_frame, bg=self.main_frame_bg_color)
     end_space.pack(pady=1800)
 
-def see_book_table():
+  def confirm_change(self, table, id, entrys):
+    for entry_list in entrys:
+      for key, value in entry_list.items():
+        # main_database.change_record_table(table=table.name, condition=[key.name, (f"'{value.get()}'" if not value.get().isdigit() else value.get()), table.primary_key.name, id])
+        table.change_record(table.get_column_dict(key)["column_object"].name, (f"'{value.get()}'" if not value.get().isdigit() else value.get()), id, live=True)
+    self.reset_window(self.tables_page_buttons)
+    
+    self.tabel_info(table)
 
-    reset_window(tables_page_buttons)
-    tabel_info(book_table)
+  def delete_record(self, table, id):
+    table.delete_record(id, live=True)
+    self.reset_window(self.tables_page_buttons)
+    self.tabel_info(table)
     pass
 
-def see_autor_table():
-    reset_window(tables_page_buttons)
-    tabel_info(autors_table)
-    pass
+  def see_book_table(self):
 
-def see_zanr_table():
-    reset_window(tables_page_buttons)
-    tabel_info(zanrid_table)
-    pass
+      self.reset_window(self.tables_page_buttons)
+      self.tabel_info(book_table)
+      pass
 
-root = Tk()
-root.title("Database Management")
-root.geometry("800x800")
-root.resizable(False, False)
+  def see_autor_table(self):
+      self.reset_window(self.tables_page_buttons)
+      self.tabel_info(autors_table)
+      pass
+
+  def see_zanr_table(self):
+      self.reset_window(self.tables_page_buttons)
+      self.tabel_info(zanrid_table)
+      pass
 
 
-tables_page_buttons = [["Kodu menüü", home], ["Raamat", see_book_table], ["Autor", see_autor_table], ["Zanr", see_zanr_table]]
-page_buttons = [["Kõik raamatud", see_all_books], ["Redigeerimismenüü", changing_menu], ["Kõik tabelid", see_all_tables]]
-editing_page_buttons = [["Kodu menüü", home],["Lisa raamat", add_book], ["Lisa autor", add_autor], ["Lisa zanr", add_zanr]]
-page_buttons_objects = list()
-home()
-root.mainloop()
+if __name__ == "__main__":
+  root = Tk()
+  app = DatabaseUI(root)
+  root.mainloop()
+    
