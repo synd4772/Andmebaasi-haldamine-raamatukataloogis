@@ -3,6 +3,7 @@ from sqlite3 import *
 from sqlite3 import Error, Connection
 from os import *
 count = 0
+count2 = 0
 
 def object_check(func):
   def wrapper(*args, **kwargs):
@@ -68,7 +69,10 @@ class SQLHDatabase(SQLHandler):
         #на вторичные ключи и типо если есть то уже тогда связывать все темы , но тут еще нужно учесть чтобы не сломать систему базы данных, а то как то не очень будет.
         #короче подумать стоит ли выключать live атребут для класса table при создании класса и т.д
         
-
+  def delete_record_table(self, table, id):
+    if self.find_table(table):
+      query_template = f"DELETE FROM {table.name} WHERE {table.primary_key.name} like {id};"
+      super().execute_query(query_template)
 
   def add_table(self, table:SQLHTable):
     self.tables.append(table)
@@ -146,6 +150,9 @@ class SQLHDatabase(SQLHandler):
           if l_table is table:
             return l_table
       return None
+
+  def get_records(self, table):
+    return super().execute_query(f"SELECT * FROM {table.name}")
 
 
 class SQLHTable(object):
@@ -227,27 +234,49 @@ class SQLHTable(object):
     else:
       return False
 
-  def __null_row_add(self):
+  def __null_row_add(self, row_id = True):
     for column_dict in self.columns:
       records = column_dict["records"]
       records_exec = self.database_object.execute_query(f"SELECT * FROM {self.name}")
-      print(records_exec)
-      records.append(("NULL" if self.row_id is not column_dict["column_object"] else len(records_exec) + 1))
+      if row_id:
+        records.append(("NULL" if self.row_id is not column_dict["column_object"] else len(records_exec) + 1))
+      else:
+        records.append("NULL")
 
-  def add_record(self, records:list):
+
+  def change_record(self, column: SQLHColumn|str, record, id, live = False):
+
+    column_dict_index = self.get_column_dict(column=column, index_return=True)
+    print(id)
+    self.columns[column_dict_index]["records"][id - 1] = record
+    if live:
+      self.database_object.change_record_table(self.name, condition=[(column.name if isinstance(column, SQLHColumn) else column), record, self.primary_key.name, id])
+
+  def get_row_by_id(self, id):
+    for record in self.get_records(rows=True):
+      if record[0] == id:
+        return record
+    return None
+
+  def delete_record(self, id, live = False):
+    for column_dict in self.columns:
+      column_dict["records"].pop(id - 1)
+    if live:
+      self.database_object.delete_record_table(self, id)
+
+  def add_record(self, records:list, live_mode:bool = True, set_row_id = True):
     primary_key_records = self.get_column_dict(self.primary_key)["records"] 
-    self.__null_row_add()
+    self.__null_row_add(row_id=set_row_id)
     records = records
-    if self.row_id:
+    if self.row_id and set_row_id:
       records.insert(0, 'none')
     for index, column_dict in enumerate(self.columns):
       last_record = column_dict['records'][-1]
-      
       if last_record == 'NULL' and len(records):
         column_dict['records'][-1] = records[index]
 
-    if self.live:
-      arg_records = list()
+    if self.live and live_mode:
+      arg_records = list()                                                                            
       for column_dict in self.columns:
         arg_records.append(column_dict["records"][-1])
       self.database_object.insert_table(table = self, records = arg_records)
@@ -255,8 +284,21 @@ class SQLHTable(object):
 
   def set_database(self, database_object:SQLHDatabase):
     if isinstance(database_object, SQLHDatabase):
-      self.live = True
       self.database_object = database_object
+      self.live = True
+      if self.alr_exists:
+        records = self.database_object.get_records(self)
+
+        # for i in range(0, records[-1][0] + 1):
+
+
+        #   correct_record = list(records[i])
+          
+        #   self.add_record(records=correct_record, live_mode=False, set_row_id=False)
+        for record in records:
+          correct_record = list(record)
+          
+          self.add_record(records=correct_record, live_mode=False, set_row_id=False)
       return True
     return False
 
@@ -267,18 +309,29 @@ class SQLHTable(object):
       return_list.append(item[key])
     return return_list
 
-  def get_records(self):
-    return self.__get_something(arg_list=self.columns, key="records")
-
+  def get_records(self, rows = False):
+    if not rows:
+      return self.__get_something(arg_list=self.columns, key="records")
+    else:
+      return_list = list()
+      for i in range(0, len(self.get_column_dict(self.primary_key)['records']) if self.primary_key is not None else len(self.columns[0]['records'])):
+        tmp_list = list()
+        for column_dict in self.columns:
+          tmp_list.append(column_dict['records'][i])
+        return_list.append(tmp_list)
+      return return_list
   def get_columns(self):
     return self.__get_something(arg_list=self.columns, key="column_object")
 
-  def get_column_dict(self, column:SQLHColumn):
+  def get_column_dict(self, column:SQLHColumn|str, index_return:bool = False):
     if len(self.get_columns()):
-      if column in self.get_columns(): # сделать проверку на то, есть ли вообще записи, если нету то уже нужно придумать что-то
-        for column_dict in self.columns:
+      for index, column_dict in enumerate(self.columns):
+        if isinstance(column, SQLHColumn):
           if column_dict["column_object"] is column:
-            return column_dict
+            return (column_dict if not index_return else index)
+        elif isinstance(column, str):
+          if column_dict["column_object"].name == column:
+            return (column_dict if not index_return else index)
     return None
     
 
