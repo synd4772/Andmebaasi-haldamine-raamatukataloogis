@@ -1,7 +1,5 @@
 from tkinter import *
 from sqlite_handler import *
-from random import *
-from time import *
 
 main_database = SQLHDatabase("data.db")
 
