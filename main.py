@@ -1,9 +1,7 @@
-
 from tkinter import *
 from sqlite_handler import *
 from random import *
 from time import *
-
 
 main_database = SQLHDatabase("data.db")
 
@@ -52,12 +50,11 @@ add_columns(book_table, book_table_columns)
 all_tables = [autors_table, zanrid_table, book_table]
 set_tables(main_database, all_tables)
 
-
 class DatabaseUI(object):
-  
+
   def __init__(self, root):
     self.root = root
-    self.root.title = "Database Management"
+    self.root.title("Database Management")
     self.root.geometry("800x800")
     self.root.resizable(False, False)
 
@@ -80,9 +77,6 @@ class DatabaseUI(object):
     self.editing_page_buttons = [["Kodu menüü", self.home],["Lisa raamat", self.add_book], ["Lisa autor", self.add_autor], ["Lisa zanr", self.add_zanr]]
 
     self.home()
-
-  def home_page():
-    pass
 
   def render_menu_buttons(self, page_buttons):
     if self.buttons_frame is None:
@@ -148,7 +142,7 @@ class DatabaseUI(object):
       self.zanr_id = Entry(self.main_frame, font = ("Arial", 15))
       self.zanr_id.pack()
 
-      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_book)
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="#705c83", font = ("Arial", 15), command=self.confirm_book)
       confirm_button.pack(pady=80)
       space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
       space2.pack(pady=100)
@@ -173,9 +167,6 @@ class DatabaseUI(object):
         self.clear_frame(self.main_frame)
 
       self.main_frame = self.render_main_frame()
-      
-      
-      
       
 
   def confirm_autor(self):
@@ -204,7 +195,7 @@ class DatabaseUI(object):
       self.autor_date_entry = Entry(self.main_frame, font = ("Arial", 15))
       self.autor_date_entry.pack()
 
-      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_autor)
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="#705c83", font = ("Arial", 15), command=self.confirm_autor)
       confirm_button.pack(pady=80)
       space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
       space2.pack(pady=100)
@@ -217,7 +208,7 @@ class DatabaseUI(object):
       autor_nimi_label.pack(pady=10)
       self.zanr_nimi_entry = Entry(self.main_frame, font=("Arial", 15) )
       self.zanr_nimi_entry.pack()
-      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="gray", font = ("Arial", 15), command=self.confirm_zanr)
+      confirm_button = Button(self.main_frame, text="Lisa", width=8, height=1, fg="white", bg="#705c83", font = ("Arial", 15), command=self.confirm_zanr)
       confirm_button.pack(pady=40)
       space2 = Label(self.main_frame, bg = self.main_frame_bg_color)
       space2.pack(pady=190)
@@ -232,6 +223,12 @@ class DatabaseUI(object):
 
   def see_all_tables(self):
       self.reset_window(self.tables_page_buttons)
+      start_space = Label(self.main_frame, bg=self.main_frame_bg_color)
+      
+      label = Label(self.main_frame, bg=self.main_frame_bg_color, text="Vali tabel", font=("Arial", 25), fg="white")
+      label.pack(pady=200)
+      start_space.pack(pady=500)
+      
       
   def tabel_info(self, tabel:SQLHTable):
       name = tabel.name
@@ -260,7 +257,6 @@ class DatabaseUI(object):
       else:
           edit_button = Button(columns_labels_frame, bg='#181436', fg='white', width=6, height=1, borderwidth=1, relief="solid", font=("Arial",7))
           edit_button.pack(side=LEFT)
-      #trebuetsa dobavit kod dalshe!
 
       # END
 
@@ -269,16 +265,13 @@ class DatabaseUI(object):
       # TABLE RECORDS START
 
       records = tabel.get_records(rows = True)
-      print(records)
       record_labels_list = list()
-      count = 0
-      for column_index, row in enumerate(records):
+      for row in records:
         temp_frame = Frame(self.main_frame, bg = self.main_frame_bg_color)
         temp_frame.pack()
         row_id = row[0]
-        print(records, 'LETSGOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO')
         for record in row:
-          record_label = Label(temp_frame, text = record, bg='#181436', fg='white', width=19, height=1, font=("Arial",10), borderwidth=1, relief="solid")
+          record_label = Label(temp_frame, text = (record[1] if isinstance(record, list) else record), bg='#181436', fg='white', width=19, height=1, font=("Arial",10), borderwidth=1, relief="solid")
           record_labels_list.append(record_label)
           record_label.pack(side=LEFT)
         Button(temp_frame, text = "edit", bg='#181436', fg='white', width=6, height=1, font=("Arial",7), borderwidth=1, relief="solid", command=lambda record_id = row_id: self.edit_record(table = tabel, record = record_id)).pack(side=RIGHT, expand=True)
@@ -312,11 +305,11 @@ class DatabaseUI(object):
     for index, t_record in enumerate(row):
       if index != 0:
         record_label = Entry(temp_frame, bg='#181436', fg='white', width=22, font=("Arial",10), borderwidth=1, relief="solid")
-        record_label.insert(0, t_record)
+        record_label.insert(0, t_record[1] if isinstance(t_record, list) else t_record)
         record_label.pack(side=LEFT)
         entrys_list.append({columns[index]:record_label})
       else:
-        record_label = Label(temp_frame, text = t_record, bg='#181436', fg='white', width=19, font=("Arial",10), borderwidth=1, relief="solid")
+        record_label = Label(temp_frame, text = t_record[1] if isinstance(t_record, list) else t_record, bg='#181436', fg='white', width=19, font=("Arial",10), borderwidth=1, relief="solid")
         record_label.pack(side=LEFT)
 
     second_space = Label(self.main_frame, bg=self.main_frame_bg_color)
@@ -349,19 +342,19 @@ class DatabaseUI(object):
 
   def see_book_table(self):
 
-      self.reset_window(self.tables_page_buttons)
-      self.tabel_info(book_table)
-      pass
+    self.reset_window(self.tables_page_buttons)
+    self.tabel_info(book_table)
+    pass
 
   def see_autor_table(self):
-      self.reset_window(self.tables_page_buttons)
-      self.tabel_info(autors_table)
-      pass
+    self.reset_window(self.tables_page_buttons)
+    self.tabel_info(autors_table)
+    pass
 
   def see_zanr_table(self):
-      self.reset_window(self.tables_page_buttons)
-      self.tabel_info(zanrid_table)
-      pass
+    self.reset_window(self.tables_page_buttons)
+    self.tabel_info(zanrid_table)
+    pass
 
 
 if __name__ == "__main__":
