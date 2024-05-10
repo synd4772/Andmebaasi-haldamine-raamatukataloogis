@@ -1,3 +1,6 @@
+# by Copper(Milishenko) <3
+
+
 from __future__ import annotations
 from sqlite3 import *
 from sqlite3 import Error, Connection
